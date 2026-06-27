@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Bird : MonoBehaviour
@@ -5,11 +6,24 @@ public class Bird : MonoBehaviour
     public Rigidbody2D myRigidbody;
     public float flapStrength;
     public LogicManager logicManager;
+    public HeartDisplay heartDisplay;
     public bool birdIsAlive = true;
+
+    public int maxHealth = 3;
+    public int currentHealth;
+    public bool isInvulnerable = false;
+
+    public float invulnerabilityDuration = 1f;
+
+    private SpriteRenderer spriteRenderer;
 
     void Start()
     {
         logicManager = FindAnyObjectByType<LogicManager>();
+        heartDisplay = FindAnyObjectByType<HeartDisplay>();
+        currentHealth = maxHealth;
+        heartDisplay.UpdateHearts(currentHealth);
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -40,5 +54,44 @@ public class Bird : MonoBehaviour
         }
     }
 
-    // (colisão com canos NÃO mata mais — o pássaro só quica e continua)
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Spike"))
+        {
+            TakeDamage();
+        }
+    }
+
+    public void TakeDamage()
+    {
+        if (isInvulnerable || !birdIsAlive) return;
+
+        currentHealth--;
+        heartDisplay.UpdateHearts(currentHealth);
+
+        if (currentHealth <= 0)
+        {
+            birdIsAlive = false;
+            logicManager.GameOver();
+            return;
+        }
+
+        StartCoroutine(InvulnerabilityRoutine());
+    }
+
+    IEnumerator InvulnerabilityRoutine()
+    {
+        isInvulnerable = true;
+
+        float timer = 0f;
+        while (timer < invulnerabilityDuration)
+        {
+            spriteRenderer.enabled = !spriteRenderer.enabled;
+            yield return new WaitForSeconds(0.1f);
+            timer += 0.1f;
+        }
+
+        spriteRenderer.enabled = true;
+        isInvulnerable = false;
+    }
 }

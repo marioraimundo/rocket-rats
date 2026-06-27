@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Logic
   - Score
+  - Spike
   layers:
   - Default
   - TransparentFX
