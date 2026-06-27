@@ -11,6 +11,10 @@ public class LogicManager : MonoBehaviour
     {
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
+
+        var panel = GameObject.Find("Canvas/GameOverPanel").transform;
+        panel.Find("PlayAgainButton").GetComponent<UnityEngine.UI.Button>().onClick.AddListener(PlayAgain);
+        panel.Find("MainMenuButton").GetComponent<UnityEngine.UI.Button>().onClick.AddListener(MainMenu);
     }
 
     public void GameOver()
@@ -26,9 +30,15 @@ public class LogicManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
-    public void RestartGame()
+    public void PlayAgain()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("StartGame");
+    }
+
+    public void MainMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("MainMenu");
     }
 }

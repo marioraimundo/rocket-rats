@@ -136,7 +136,7 @@ public class SetupHeartUI
         if (logic != null)
         {
             logic.gameOverPanel = panelGO;
-            btn.onClick.AddListener(() => logic.RestartGame());
+            btn.onClick.AddListener(() => logic.PlayAgain());
         }
 
         Rat rat = Object.FindFirstObjectByType<Rat>();
