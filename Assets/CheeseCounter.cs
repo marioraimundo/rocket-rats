@@ -10,10 +10,14 @@ public class CheeseCounter : MonoBehaviour
 
     void Start()
     {
-        Transform iconT = transform.Find("CheeseIcon");
-        if (iconT != null) cheeseIcon = iconT.GetComponent<Image>();
-        Transform textT = transform.Find("CheeseText");
-        if (textT != null) cheeseText = textT.GetComponent<TMP_Text>();
+        Transform cheeseContainer = transform.Find("Cheese");
+        if (cheeseContainer != null)
+        {
+            Transform iconT = cheeseContainer.Find("CheeseIcon");
+            if (iconT != null) cheeseIcon = iconT.GetComponent<Image>();
+            Transform textT = cheeseContainer.Find("CheeseText");
+            if (textT != null) cheeseText = textT.GetComponent<TMP_Text>();
+        }
         UpdateUI();
     }
 

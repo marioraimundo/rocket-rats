@@ -14,13 +14,13 @@ Flappy Bird clone built with Unity 6000.0.2f1 (URP 2D).
 | File | Purpose |
 |---|---|
 | `Assets/Bird.cs` | Player: Space=flap, Left/Right arrows, **health system** (maxHealth 3), invulnerability 1s, `OnCollisionEnter2D` → only calls `TakeDamage()` for tag `"Spike"` |
-| `Assets/HeartDisplay.cs` | 3 heart Images UI; `Start()` auto‑finds children via `GetComponentsInChildren<Image>()` |
+| `Assets/HeartDisplay.cs` | 3 heart Images UI; `Start()` auto‑finds `Hearts` container → `GetComponentsInChildren<Image>()` |
 | `Assets/LogicManager.cs` | GameOver panel + cheese final text + `RestartGame()` (recarrega cena) — sem score de pipes |
 | `Assets/PipeMovScript.cs` | Pipe movement leftward + destroy at dead zone |
 | `Assets/PipeSpawnerScript.cs` | Timed pipe spawning; **alternates** between `pipe` and `pipeSpike` prefabs |
 | `Assets/scoreTrigger.cs` | Esvaziado — passar por pipes já não conta pontos |
 | `Assets/Cheese.cs` | Gira o queijo, detecta colisão com layer 3, incrementa `CheeseCounter` |
-| `Assets/CheeseCounter.cs` | Contador de queijos na UI (Image + TMP_Text), auto‑encontrado via `Start()` |
+| `Assets/CheeseCounter.cs` | Contador de queijos na UI (Image + TMP_Text), auto‑encontrado via `transform.Find("Cheese/...")` |
 | `Assets/backgroundScroller.cs` | Fixed‑speed dual‑copy infinite scroll (GameObject move) |
 
 ## Prefabs
@@ -29,7 +29,7 @@ Flappy Bird clone built with Unity 6000.0.2f1 (URP 2D).
 |---|---|
 | `Assets/Pipe.prefab` | Normal obstacle (no tag) — physical collision only, no damage |
 | `Assets/PipeSpike.prefab` | Spiked obstacle — `BottomPipe` has tag **"Spike"** → deals 1 damage |
-| `Assets/GameUI.prefab` | (ex‑HeartUI) Hearts + contador de queijos (Image + TMP_Text) + CheeseCounter + HeartDisplay |
+| `Assets/GameUI.prefab` | (ex‑HeartUI) Hearts + contador de queijos (Image + TMP_Text) + CheeseCounter + HeartDisplay. Children: `Hearts` (Heart1, Heart2, Heart3), `Cheese` (CheeseIcon, CheeseText) |
 | `Assets/Background.prefab` | Full‑screen background with animated Duto; `SpriteRenderer` (background_clean) + `backgroundScroller`; child `Duto` with `SpriteRenderer` + `Animator` (DutoWater). Sorting: Background=-10, Duto=-4 |
 
 ## Animations

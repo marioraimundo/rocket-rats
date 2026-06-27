@@ -7,7 +7,11 @@ public class HeartDisplay : MonoBehaviour
 
     void Start()
     {
-        hearts = GetComponentsInChildren<Image>();
+        Transform heartsContainer = transform.Find("Hearts");
+        if (heartsContainer != null)
+            hearts = heartsContainer.GetComponentsInChildren<Image>();
+        else
+            hearts = GetComponentsInChildren<Image>();
         UpdateHearts(3);
     }
 
