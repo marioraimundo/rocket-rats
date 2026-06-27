@@ -13,7 +13,7 @@ Jetpack Rat clone built with Unity 6000.0.2f1 (URP 2D).
 
 | File | Purpose |
 |---|---|
-| `Assets/Rat.cs` | Player (ex‑Bird): Space=jetpack (hold to rise), Left/Right arrows (only while jetpack active), **health system** (maxHealth 3), invulnerability 1s, `OnCollisionEnter2D` → only calls `TakeDamage()` for tag `"Spike"` |
+| `Assets/Rat.cs` | Player (ex‑Bird): Space=jetpack (hold to rise, drains stamina 20/s), Left/Right/A/D arrows (always available, consume stamina 5/s), **health system** (maxHealth 3), invulnerability 1s, **stamina system** (maxStamina 100, consume 20/s jetpack + 5/s horizontal, recover 10/s after 1s delay), `OnCollisionEnter2D` → only calls `TakeDamage()` for tag `"Spike"` |
 | `Assets/HeartDisplay.cs` | 3 heart Images UI; `Start()` auto‑finds `Hearts` container → `GetComponentsInChildren<Image>()` |
 | `Assets/LogicManager.cs` | GameOver panel + cheese final text + `RestartGame()` (recarrega cena) — sem score de pipes |
 | `Assets/PipeMovScript.cs` | Pipe movement leftward + destroy at dead zone |

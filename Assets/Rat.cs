@@ -21,8 +21,11 @@ public class Rat : MonoBehaviour
     public float currentStamina;
     public float staminaConsumeRate = 20f;
     public float staminaRecoverRate = 10f;
+    public float staminaRecoverDelay = 1f;
+    public float staminaHorizontalCost = 5f;
     public TMP_Text staminaText;
 
+    private float staminaRecoverTimer;
     private SpriteRenderer spriteRenderer;
 
     void Start()
@@ -41,30 +44,46 @@ public class Rat : MonoBehaviour
 
         bool jetpackKeyHeld = Input.GetKey(KeyCode.Space);
         bool jetpackActive = jetpackKeyHeld && currentStamina > 0;
+        bool usingStamina = false;
 
         if (jetpackActive)
         {
             currentStamina -= staminaConsumeRate * Time.deltaTime;
             if (currentStamina < 0) currentStamina = 0;
             myRigidbody.velocity = new Vector2(myRigidbody.velocity.x, jetpackUpSpeed);
+            usingStamina = true;
         }
-        else if (!jetpackKeyHeld && currentStamina < maxStamina)
+
+        float horizontalInput = 0;
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            horizontalInput = -1f;
+        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            horizontalInput = 1f;
+
+        if (horizontalInput != 0 && currentStamina > 0)
         {
-            currentStamina += staminaRecoverRate * Time.deltaTime;
-            if (currentStamina > maxStamina) currentStamina = maxStamina;
+            currentStamina -= staminaHorizontalCost * Time.deltaTime;
+            if (currentStamina < 0) currentStamina = 0;
+            myRigidbody.velocity = new Vector2(horizontalInput * horizontalSpeed, myRigidbody.velocity.y);
+            usingStamina = true;
+        }
+
+        if (usingStamina)
+        {
+            staminaRecoverTimer = 0f;
+        }
+        else if (currentStamina < maxStamina)
+        {
+            staminaRecoverTimer += Time.deltaTime;
+            if (staminaRecoverTimer >= staminaRecoverDelay)
+            {
+                currentStamina += staminaRecoverRate * Time.deltaTime;
+                if (currentStamina > maxStamina) currentStamina = maxStamina;
+            }
         }
 
         if (staminaText != null)
             staminaText.text = "Stamina: " + Mathf.RoundToInt(currentStamina);
-
-        float horizontalInput = 0;
-            if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-                horizontalInput = -horizontalSpeed;
-            else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-                horizontalInput = horizontalSpeed;
-
-        if (horizontalInput != 0)
-            myRigidbody.velocity = new Vector2(horizontalInput, myRigidbody.velocity.y);
 
         float rotationZ = Mathf.Clamp(myRigidbody.velocity.y * 2f, -30f, 30f);
         transform.rotation = Quaternion.Euler(0, 0, rotationZ);
