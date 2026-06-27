@@ -1,19 +1,27 @@
 using System.Collections;
 using UnityEngine;
+using TMPro;
 
-public class Bird : MonoBehaviour
+public class Rat : MonoBehaviour
 {
     public Rigidbody2D myRigidbody;
-    public float flapStrength;
+    public float jetpackUpSpeed;
+    public float horizontalSpeed = 5f;
     public LogicManager logicManager;
     public HeartDisplay heartDisplay;
-    public bool birdIsAlive = true;
+    public bool ratIsAlive = true;
 
     public int maxHealth = 3;
     public int currentHealth;
     public bool isInvulnerable = false;
 
     public float invulnerabilityDuration = 1f;
+
+    public float maxStamina = 100f;
+    public float currentStamina;
+    public float staminaConsumeRate = 20f;
+    public float staminaRecoverRate = 10f;
+    public TMP_Text staminaText;
 
     private SpriteRenderer spriteRenderer;
 
@@ -23,33 +31,47 @@ public class Bird : MonoBehaviour
         heartDisplay = FindAnyObjectByType<HeartDisplay>();
         currentHealth = maxHealth;
         heartDisplay.UpdateHearts(currentHealth);
+        currentStamina = maxStamina;
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void Update()
     {
-        if (!birdIsAlive) return;
+        if (!ratIsAlive) return;
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        bool jetpackKeyHeld = Input.GetKey(KeyCode.Space);
+        bool jetpackActive = jetpackKeyHeld && currentStamina > 0;
+
+        if (jetpackActive)
         {
-            myRigidbody.velocity = Vector2.up * flapStrength;
+            currentStamina -= staminaConsumeRate * Time.deltaTime;
+            if (currentStamina < 0) currentStamina = 0;
+            myRigidbody.velocity = new Vector2(myRigidbody.velocity.x, jetpackUpSpeed);
+        }
+        else if (!jetpackKeyHeld && currentStamina < maxStamina)
+        {
+            currentStamina += staminaRecoverRate * Time.deltaTime;
+            if (currentStamina > maxStamina) currentStamina = maxStamina;
         }
 
+        if (staminaText != null)
+            staminaText.text = "Stamina: " + Mathf.RoundToInt(currentStamina);
+
         float horizontalInput = 0;
-        if (Input.GetKey(KeyCode.LeftArrow))
-            horizontalInput = -5;
-        else if (Input.GetKey(KeyCode.RightArrow))
-            horizontalInput = 5;
+            if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+                horizontalInput = -horizontalSpeed;
+            else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+                horizontalInput = horizontalSpeed;
 
         if (horizontalInput != 0)
             myRigidbody.velocity = new Vector2(horizontalInput, myRigidbody.velocity.y);
 
-        float rotationZ = Mathf.Clamp(myRigidbody.velocity.y * 4f, -90f, 90f);
+        float rotationZ = Mathf.Clamp(myRigidbody.velocity.y * 2f, -30f, 30f);
         transform.rotation = Quaternion.Euler(0, 0, rotationZ);
 
         if (transform.position.y > 14 || transform.position.y < -14)
         {
-            birdIsAlive = false;
+            ratIsAlive = false;
             logicManager.GameOver();
         }
     }
@@ -64,14 +86,14 @@ public class Bird : MonoBehaviour
 
     public void TakeDamage()
     {
-        if (isInvulnerable || !birdIsAlive) return;
+        if (isInvulnerable || !ratIsAlive) return;
 
         currentHealth--;
         heartDisplay.UpdateHearts(currentHealth);
 
         if (currentHealth <= 0)
         {
-            birdIsAlive = false;
+            ratIsAlive = false;
             logicManager.GameOver();
             return;
         }

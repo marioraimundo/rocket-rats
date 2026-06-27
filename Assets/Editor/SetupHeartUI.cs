@@ -139,10 +139,10 @@ public class SetupHeartUI
             btn.onClick.AddListener(() => logic.RestartGame());
         }
 
-        Bird bird = Object.FindFirstObjectByType<Bird>();
-        if (bird != null)
+        Rat rat = Object.FindFirstObjectByType<Rat>();
+        if (rat != null)
         {
-            bird.heartDisplay = heartDisplay;
+            rat.heartDisplay = heartDisplay;
         }
 
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
