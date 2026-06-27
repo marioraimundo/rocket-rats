@@ -1,14 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using TMPro;
 
 public class LogicManager : MonoBehaviour
 {
-    public int playerScore;
-    public Text scoreText;
-
     public GameObject gameOverPanel;
-    public Text finalScoreText;
+    public TMP_Text cheeseFinalText;
 
     void Start()
     {
@@ -16,19 +13,14 @@ public class LogicManager : MonoBehaviour
             gameOverPanel.SetActive(false);
     }
 
-    public void AddScore()
-    {
-        playerScore++;
-        scoreText.text = playerScore.ToString();
-    }
-
     public void GameOver()
     {
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
-            if (finalScoreText != null)
-                finalScoreText.text = "Score: " + playerScore.ToString();
+            CheeseCounter counter = FindAnyObjectByType<CheeseCounter>();
+            if (cheeseFinalText != null && counter != null)
+                cheeseFinalText.text = "Queijos: " + counter.GetCheeseCount();
         }
 
         Time.timeScale = 0f;

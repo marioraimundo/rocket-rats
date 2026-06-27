@@ -136,7 +136,6 @@ public class SetupHeartUI
         if (logic != null)
         {
             logic.gameOverPanel = panelGO;
-            logic.finalScoreText = scoreText;
             btn.onClick.AddListener(() => logic.RestartGame());
         }
 

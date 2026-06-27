@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class Cheese : MonoBehaviour
 {
-    public LogicManager logicManager;
+    private CheeseCounter cheeseCounter;
     public float rotationSpeed = 90f;
     private bool collected;
 
     void Start()
     {
-        logicManager = FindAnyObjectByType<LogicManager>();
+        cheeseCounter = FindAnyObjectByType<CheeseCounter>();
     }
 
     void Update()
@@ -21,7 +21,8 @@ public class Cheese : MonoBehaviour
         if (!collected && collision.gameObject.layer == 3)
         {
             collected = true;
-            logicManager.AddScore();
+            if (cheeseCounter != null)
+                cheeseCounter.AddCheese();
             Destroy(gameObject);
         }
     }
