@@ -1,6 +1,6 @@
 # Rocket Rats
 
-Flappy Bird clone built with Unity 6000.0.2f1 (URP 2D).
+Jetpack Rat clone built with Unity 6000.0.2f1 (URP 2D).
 
 ## Project structure
 
@@ -13,7 +13,7 @@ Flappy Bird clone built with Unity 6000.0.2f1 (URP 2D).
 
 | File | Purpose |
 |---|---|
-| `Assets/Bird.cs` | Player: Space=flap, Left/Right arrows, **health system** (maxHealth 3), invulnerability 1s, `OnCollisionEnter2D` → only calls `TakeDamage()` for tag `"Spike"` |
+| `Assets/Rat.cs` | Player (ex‑Bird): Space=jetpack (hold to rise), Left/Right arrows (only while jetpack active), **health system** (maxHealth 3), invulnerability 1s, `OnCollisionEnter2D` → only calls `TakeDamage()` for tag `"Spike"` |
 | `Assets/HeartDisplay.cs` | 3 heart Images UI; `Start()` auto‑finds `Hearts` container → `GetComponentsInChildren<Image>()` |
 | `Assets/LogicManager.cs` | GameOver panel + cheese final text + `RestartGame()` (recarrega cena) — sem score de pipes |
 | `Assets/PipeMovScript.cs` | Pipe movement leftward + destroy at dead zone |
@@ -48,11 +48,11 @@ Flappy Bird clone built with Unity 6000.0.2f1 (URP 2D).
 
 ## Input
 
-Uses **New Input System** (`Assets/InputSystem_Actions.inputactions`). Polled via `Input.GetKey` in `Bird.Update()`.
+Uses **New Input System** (`Assets/InputSystem_Actions.inputactions`). Polled via `Input.GetKey` in `Rat.Update()`.
 
 ## Tags
 
-- **Spike** — applied to PipeSpike's BottomPipe; Bird checks for this tag to deal damage
+- **Spike** — applied to PipeSpike's BottomPipe; Rat checks for this tag to deal damage
 
 ## MCP Server
 
