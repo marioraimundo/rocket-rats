@@ -5,7 +5,7 @@ using TMPro;
 public class Rat : MonoBehaviour
 {
     public Rigidbody2D myRigidbody;
-    public float jetpackUpSpeed;
+    public float jetpackUpSpeed = 4f;
     public float horizontalSpeed = 5f;
     public LogicManager logicManager;
     public HeartDisplay heartDisplay;
@@ -14,19 +14,29 @@ public class Rat : MonoBehaviour
     public int maxHealth = 3;
     public int currentHealth;
     public bool isInvulnerable = false;
-
     public float invulnerabilityDuration = 1f;
 
     public float maxStamina = 100f;
     public float currentStamina;
     public float staminaConsumeRate = 20f;
-    public float staminaRecoverRate = 10f;
-    public float staminaRecoverDelay = 1f;
+    public float staminaRecoverRate = 40f;
+    public float staminaRecoverDelay = 0f;
     public float staminaHorizontalCost = 5f;
     public TMP_Text staminaText;
 
     private float staminaRecoverTimer;
-    private SpriteRenderer spriteRenderer;
+
+    // Animation parts (auto-found in Start)
+    private Animator fireLeftAnim;
+    private Animator fireRightAnim;
+    private Animator gunAnim;
+    private Transform jetpackLeft;
+    private Transform jetpackRight;
+    private Transform ear;
+    private Transform nose;
+    private Transform headTransform;
+
+    private SpriteRenderer[] allRenderers;
 
     void Start()
     {
@@ -35,7 +45,53 @@ public class Rat : MonoBehaviour
         currentHealth = maxHealth;
         heartDisplay.UpdateHearts(currentHealth);
         currentStamina = maxStamina;
-        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (myRigidbody == null)
+            myRigidbody = GetComponent<Rigidbody2D>();
+
+        // Auto-find animation references from hierarchy
+        var body = transform.Find("Body");
+        if (body != null)
+        {
+            headTransform = body.Find("null_head") ?? body.Find("Head");
+            if (headTransform != null)
+            {
+                var headContainer = headTransform.Find("Head") ?? headTransform;
+                ear = headContainer.Find("null_Ear") ?? headContainer.Find("Ear");
+                nose = headContainer.Find("null_nose") ?? headContainer.Find("Nose");
+            }
+
+            var jm = body.Find("JetpackMiddle");
+            if (jm != null)
+            {
+                jetpackLeft = jm.Find("Jetpack_Left");
+                if (jetpackLeft != null)
+                {
+                    var fl = jetpackLeft.Find("Fire_Left");
+                    if (fl != null) fireLeftAnim = fl.GetComponent<Animator>();
+                }
+
+                jetpackRight = jm.Find("Jetpack_Right");
+                if (jetpackRight != null)
+                {
+                    var fr = jetpackRight.Find("Fire_Right");
+                    if (fr != null) fireRightAnim = fr.GetComponent<Animator>();
+                }
+            }
+
+            var gunObj = body.Find("Gun");
+            if (gunObj != null) gunAnim = gunObj.GetComponent<Animator>();
+        }
+
+        // Auto-find stamina text in UI
+        if (staminaText == null)
+        {
+            var staminaGO = GameObject.Find("GameUI/Stamina/StaminaText");
+            if (staminaGO != null)
+                staminaText = staminaGO.GetComponent<TMP_Text>();
+        }
+
+        allRenderers = GetComponentsInChildren<SpriteRenderer>(true);
     }
 
     void Update()
@@ -43,13 +99,13 @@ public class Rat : MonoBehaviour
         if (!ratIsAlive) return;
 
         bool jetpackKeyHeld = Input.GetKey(KeyCode.Space);
-        bool jetpackActive = jetpackKeyHeld && currentStamina > 0;
+        float jetpackCostThisFrame = staminaConsumeRate * Time.deltaTime;
+        bool jetpackActive = jetpackKeyHeld && currentStamina >= jetpackCostThisFrame;
         bool usingStamina = false;
 
         if (jetpackActive)
         {
-            currentStamina -= staminaConsumeRate * Time.deltaTime;
-            if (currentStamina < 0) currentStamina = 0;
+            currentStamina -= jetpackCostThisFrame;
             myRigidbody.velocity = new Vector2(myRigidbody.velocity.x, jetpackUpSpeed);
             usingStamina = true;
         }
@@ -60,12 +116,65 @@ public class Rat : MonoBehaviour
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
             horizontalInput = 1f;
 
-        if (horizontalInput != 0 && currentStamina > 0)
+        float horizontalCostThisFrame = staminaHorizontalCost * Time.deltaTime;
+        if (horizontalInput != 0 && currentStamina >= horizontalCostThisFrame)
         {
-            currentStamina -= staminaHorizontalCost * Time.deltaTime;
-            if (currentStamina < 0) currentStamina = 0;
+            currentStamina -= horizontalCostThisFrame;
             myRigidbody.velocity = new Vector2(horizontalInput * horizontalSpeed, myRigidbody.velocity.y);
             usingStamina = true;
+        }
+
+        // Jetpack fire animation — active with jetpack OR horizontal movement
+        bool fireActive = jetpackActive || horizontalInput != 0;
+        if (fireLeftAnim != null) fireLeftAnim.SetBool("IsThrusting", fireActive);
+        if (fireRightAnim != null) fireRightAnim.SetBool("IsThrusting", fireActive);
+
+        // Jetpack nozzle rotation (opposite to movement)
+        float nozzleTilt = -horizontalInput * 20f;
+        if (jetpackLeft != null)
+            jetpackLeft.localRotation = Quaternion.Euler(0, 0, nozzleTilt);
+        if (jetpackRight != null)
+            jetpackRight.localRotation = Quaternion.Euler(0, 0, nozzleTilt);
+
+        // Ear and nose rotation tied to movement
+        float tiltAmount = -horizontalInput * 15f;
+
+        // Jetpack vertical tilt — head leans up when thrusting
+        float jetpackTiltTarget = 0f;
+        if (jetpackActive)
+            jetpackTiltTarget = -8f;
+
+        float lerpSpeed = 5f;
+
+        if (headTransform != null)
+            headTransform.localRotation = Quaternion.Lerp(
+                headTransform.localRotation,
+                Quaternion.Euler(0, 0, jetpackTiltTarget),
+                Time.deltaTime * lerpSpeed
+            );
+
+        float earJetpackOffset = jetpackActive ? -15f : 0f;
+        float noseJetpackOffset = jetpackActive ? -10f : 0f;
+
+        if (ear != null)
+            ear.localRotation = Quaternion.Lerp(
+                ear.localRotation,
+                Quaternion.Euler(0, 0, jetpackTiltTarget + earJetpackOffset + tiltAmount),
+                Time.deltaTime * lerpSpeed
+            );
+
+        if (nose != null)
+            nose.localRotation = Quaternion.Lerp(
+                nose.localRotation,
+                Quaternion.Euler(0, 0, jetpackTiltTarget + noseJetpackOffset + tiltAmount),
+                Time.deltaTime * lerpSpeed
+            );
+
+        // Gun shooting on left mouse click
+        if (Input.GetKeyDown(KeyCode.Mouse0) && gunAnim != null)
+        {
+            gunAnim.SetBool("IsShooting", true);
+            StartCoroutine(ResetGun());
         }
 
         if (usingStamina)
@@ -93,6 +202,13 @@ public class Rat : MonoBehaviour
             ratIsAlive = false;
             logicManager.GameOver();
         }
+    }
+
+    IEnumerator ResetGun()
+    {
+        yield return new WaitForSeconds(0.15f);
+        if (gunAnim != null)
+            gunAnim.SetBool("IsShooting", false);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -127,12 +243,14 @@ public class Rat : MonoBehaviour
         float timer = 0f;
         while (timer < invulnerabilityDuration)
         {
-            spriteRenderer.enabled = !spriteRenderer.enabled;
+            foreach (var sr in allRenderers)
+                sr.enabled = !sr.enabled;
             yield return new WaitForSeconds(0.1f);
             timer += 0.1f;
         }
 
-        spriteRenderer.enabled = true;
+        foreach (var sr in allRenderers)
+            sr.enabled = true;
         isInvulnerable = false;
     }
 }

@@ -10,11 +10,15 @@ public class LogicManager : MonoBehaviour
     void Start()
     {
         if (gameOverPanel != null)
+        {
             gameOverPanel.SetActive(false);
-
-        var panel = GameObject.Find("Canvas/GameOverPanel").transform;
-        panel.Find("PlayAgainButton").GetComponent<UnityEngine.UI.Button>().onClick.AddListener(PlayAgain);
-        panel.Find("MainMenuButton").GetComponent<UnityEngine.UI.Button>().onClick.AddListener(MainMenu);
+            var buttons = gameOverPanel.GetComponentsInChildren<UnityEngine.UI.Button>(true);
+            foreach (var b in buttons)
+            {
+                if (b.name == "PlayAgainButton") b.onClick.AddListener(PlayAgain);
+                else if (b.name == "MainMenuButton") b.onClick.AddListener(MainMenu);
+            }
+        }
     }
 
     public void GameOver()
